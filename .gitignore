@@ -4,3 +4,6 @@ node_modules
 .env.local
 uploads
 prisma/*.db
+
+.vercel
+.env.production.local
