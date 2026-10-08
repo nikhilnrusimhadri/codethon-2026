@@ -1,3 +1,423 @@
-'use client'; import { useEffect,useState } from 'react'; import { AdminTitle } from '@/components/admin'; import { Search, Eye, Check, X } from 'lucide-react';
-const branches=['','CSE','CSM','EEE','ECE','MECHANICAL','CIVIL'];
-export default function Registrations(){const [data,setData]=useState<any>({items:[],pages:1,total:0});const [q,setQ]=useState('');const [branch,setBranch]=useState('');const [status,setStatus]=useState('');const [page,setPage]=useState(1);const [selected,setSelected]=useState<any>(null);async function load(){const u=new URL('/api/admin/registrations',location.origin);u.searchParams.set('page',String(page));if(q)u.searchParams.set('q',q);if(branch)u.searchParams.set('branch',branch);if(status)u.searchParams.set('status',status);const r=await fetch(u);if(r.ok)setData(await r.json());}useEffect(()=>{load()},[q,branch,status,page]);async function update(id:string,body:any){const r=await fetch('/api/admin/registrations/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(r.ok){setSelected(null);load()}}return <><AdminTitle eyebrow="Participants" title="Registrations" description={`${data.total} total registrations`}/><div className="card" style={{padding:16,marginBottom:14,display:'flex',gap:10,flexWrap:'wrap'}}><div style={{flex:1,minWidth:220,position:'relative'}}><Search size={15} style={{position:'absolute',left:12,top:12,color:'var(--muted)'}}/><input className="input" style={{paddingLeft:35}} placeholder="Search name, roll, email, registration ID" value={q} onChange={e=>{setPage(1);setQ(e.target.value)}}/></div><select className="input" style={{width:160}} value={branch} onChange={e=>{setPage(1);setBranch(e.target.value)}}>{branches.map(b=><option key={b} value={b}>{b||'All branches'}</option>)}</select><select className="input" style={{width:160}} value={status} onChange={e=>{setPage(1);setStatus(e.target.value)}}><option value="">All statuses</option><option value="PENDING">Pending</option><option value="VERIFIED">Verified</option><option value="REJECTED">Rejected</option></select></div><div className="table-wrap"><table className="table"><thead><tr><th>Name</th><th>Roll No</th><th>Branch</th><th>Email</th><th>Status</th><th>Team</th><th/></tr></thead><tbody>{data.items.map((p:any)=><tr key={p.id}><td><b>{p.fullName}</b><div className="muted">{p.registrationId}</div></td><td>{p.rollNumber}</td><td>{p.branch}</td><td>{p.collegeEmail}</td><td><span className={`status ${p.verificationStatus.toLowerCase()}`}>{p.verificationStatus}</span></td><td>{p.teamMembership?.team?.teamName||'—'}</td><td><button className="btn btn-ghost" style={{padding:'7px 10px'}} onClick={()=>setSelected(p)}><Eye size={14}/> View</button></td></tr>)}</tbody></table></div><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:14}}><span className="muted">Page {data.page} / {data.pages}</span><div style={{display:'flex',gap:8}}><button className="btn btn-ghost" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>Previous</button><button className="btn btn-ghost" disabled={page>=data.pages} onClick={()=>setPage(p=>p+1)}>Next</button></div></div>{selected&&<div style={{position:'fixed',inset:0,zIndex:100,background:'#000b',display:'grid',placeItems:'center',padding:20}}><div className="card" style={{width:'min(760px,100%)',maxHeight:'90vh',overflow:'auto',padding:26}}><div style={{display:'flex',justifyContent:'space-between'}}><div><div className="eyebrow">{selected.registrationId}</div><h2>{selected.fullName}</h2></div><button onClick={()=>setSelected(null)} className="btn btn-ghost" style={{padding:8}}><X/></button></div><div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:12}}>{[['Roll Number',selected.rollNumber],['Email',selected.collegeEmail],['Phone',selected.phoneNumber],['Branch',selected.branch],['Section',selected.section||'—'],['Year','3rd Year'],['Registered',new Date(selected.registeredAt).toLocaleString('en-IN')]].map(([a,b])=><div className="card" key={String(a)} style={{padding:14}}><div className="muted" style={{fontSize:11}}>{a}</div><div style={{marginTop:5}}>{b}</div></div>)}</div><div className="card" style={{marginTop:14,padding:16}}><div className="eyebrow">COLLEGE ID</div><a className="btn btn-ghost" style={{marginTop:10}} href={selected.collegeIdUrl} target="_blank">Open Secure Document</a></div><div style={{display:'flex',gap:10,marginTop:18}}><button className="btn" style={{background:'#62f5a7',color:'#04110a'}} onClick={()=>update(selected.id,{verificationStatus:'VERIFIED'})}><Check size={15}/> Verify</button><button className="btn" style={{background:'#ff6b7a',color:'#160307'}} onClick={()=>update(selected.id,{verificationStatus:'REJECTED',rejectionReason:'Rejected by admin'})}><X size={15}/> Reject</button></div></div></div>}</>}
+'use client';
+
+import { useEffect, useState } from 'react';
+import { AdminTitle } from '@/components/admin';
+import { Search, Eye, Check, X } from 'lucide-react';
+
+const branches = ['', 'CSE', 'CSM', 'EEE', 'ECE', 'MECHANICAL', 'CIVIL'];
+
+export default function Registrations() {
+  const [data, setData] = useState<any>({
+    items: [],
+    pages: 1,
+    total: 0,
+  });
+
+  const [q, setQ] = useState('');
+  const [branch, setBranch] = useState('');
+  const [status, setStatus] = useState('');
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<any>(null);
+
+  async function load() {
+    const u = new URL(
+      '/api/admin/registrations',
+      location.origin,
+    );
+
+    u.searchParams.set('page', String(page));
+
+    if (q) {
+      u.searchParams.set('q', q);
+    }
+
+    if (branch) {
+      u.searchParams.set('branch', branch);
+    }
+
+    if (status) {
+      u.searchParams.set('status', status);
+    }
+
+    const r = await fetch(u);
+
+    if (r.ok) {
+      setData(await r.json());
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [q, branch, status, page]);
+
+  async function update(id: string, body: any) {
+    const r = await fetch(
+      '/api/admin/registrations/' + id,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      },
+    );
+
+    if (r.ok) {
+      setSelected(null);
+      load();
+    }
+  }
+
+  return (
+    <>
+      <AdminTitle
+        eyebrow="Participants"
+        title="Registrations"
+        description={`${data.total} total registrations`}
+      />
+
+      <div
+        className="card"
+        style={{
+          padding: 16,
+          marginBottom: 14,
+          display: 'flex',
+          gap: 10,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            minWidth: 220,
+            position: 'relative',
+          }}
+        >
+          <Search
+            size={15}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: 12,
+              color: 'var(--muted)',
+            }}
+          />
+
+          <input
+            className="input"
+            style={{ paddingLeft: 35 }}
+            placeholder="Search name, roll, email, registration ID"
+            value={q}
+            onChange={(e) => {
+              setPage(1);
+              setQ(e.target.value);
+            }}
+          />
+        </div>
+
+        <select
+          className="input"
+          style={{ width: 160 }}
+          value={branch}
+          onChange={(e) => {
+            setPage(1);
+            setBranch(e.target.value);
+          }}
+        >
+          {branches.map((b) => (
+            <option key={b} value={b}>
+              {b || 'All branches'}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="input"
+          style={{ width: 160 }}
+          value={status}
+          onChange={(e) => {
+            setPage(1);
+            setStatus(e.target.value);
+          }}
+        >
+          <option value="">All statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="VERIFIED">Verified</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Branch</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Team</th>
+              <th />
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.items.map((p: any) => (
+              <tr key={p.id}>
+                <td>
+                  <b>{p.fullName}</b>
+                  <div className="muted">
+                    {p.registrationId}
+                  </div>
+                </td>
+
+                <td>{p.rollNumber}</td>
+
+                <td>{p.branch}</td>
+
+                <td>{p.collegeEmail}</td>
+
+                <td>
+                  <span
+                    className={`status ${p.verificationStatus.toLowerCase()}`}
+                  >
+                    {p.verificationStatus}
+                  </span>
+                </td>
+
+                <td>
+                  {p.teamMembership?.team?.teamName ||
+                    '—'}
+                </td>
+
+                <td>
+                  <button
+                    className="btn btn-ghost"
+                    style={{
+                      padding: '7px 10px',
+                    }}
+                    onClick={() => setSelected(p)}
+                  >
+                    <Eye size={14} />
+                    View
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: 14,
+        }}
+      >
+        <span className="muted">
+          Page {data.page} / {data.pages}
+        </span>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+          }}
+        >
+          <button
+            className="btn btn-ghost"
+            disabled={page <= 1}
+            onClick={() =>
+              setPage((p) => p - 1)
+            }
+          >
+            Previous
+          </button>
+
+          <button
+            className="btn btn-ghost"
+            disabled={page >= data.pages}
+            onClick={() =>
+              setPage((p) => p + 1)
+            }
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      {selected && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            background: '#000b',
+            display: 'grid',
+            placeItems: 'center',
+            padding: 20,
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              width: 'min(760px,100%)',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              padding: 26,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <div className="eyebrow">
+                  {selected.registrationId}
+                </div>
+
+                <h2>{selected.fullName}</h2>
+              </div>
+
+              <button
+                onClick={() => setSelected(null)}
+                className="btn btn-ghost"
+                style={{ padding: 8 }}
+              >
+                <X />
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(2,minmax(0,1fr))',
+                gap: 12,
+              }}
+            >
+              {[
+                [
+                  'Roll Number',
+                  selected.rollNumber,
+                ],
+                [
+                  'Email',
+                  selected.collegeEmail,
+                ],
+                [
+                  'Phone',
+                  selected.phoneNumber,
+                ],
+                [
+                  'Branch',
+                  selected.branch,
+                ],
+                [
+                  'Section',
+                  selected.section || '—',
+                ],
+                ['Year', '3rd Year'],
+                [
+                  'Registered',
+                  new Date(
+                    selected.registeredAt,
+                  ).toLocaleString('en-IN'),
+                ],
+              ].map(([a, b]) => (
+                <div
+                  className="card"
+                  key={String(a)}
+                  style={{ padding: 14 }}
+                >
+                  <div
+                    className="muted"
+                    style={{ fontSize: 11 }}
+                  >
+                    {a}
+                  </div>
+
+                  <div style={{ marginTop: 5 }}>
+                    {b}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="card"
+              style={{
+                marginTop: 14,
+                padding: 16,
+              }}
+            >
+              <div className="eyebrow">
+                COLLEGE ID
+              </div>
+
+              <a
+                className="btn btn-ghost"
+                style={{ marginTop: 10 }}
+                href={`/api/admin/upload?pathname=${encodeURIComponent(
+                  selected.collegeIdUrl,
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open Secure Document
+              </a>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                marginTop: 18,
+              }}
+            >
+              <button
+                className="btn"
+                style={{
+                  background: '#62f5a7',
+                  color: '#04110a',
+                }}
+                onClick={() =>
+                  update(selected.id, {
+                    verificationStatus:
+                      'VERIFIED',
+                  })
+                }
+              >
+                <Check size={15} />
+                Verify
+              </button>
+
+              <button
+                className="btn"
+                style={{
+                  background: '#ff6b7a',
+                  color: '#160307',
+                }}
+                onClick={() =>
+                  update(selected.id, {
+                    verificationStatus:
+                      'REJECTED',
+                    rejectionReason:
+                      'Rejected by admin',
+                  })
+                }
+              >
+                <X size={15} />
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
