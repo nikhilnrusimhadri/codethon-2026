@@ -87,7 +87,7 @@ export function Navbar() {
               fontSize: 15,
             }}
           >
-            CODETHON <span className="gradient-text">2026</span>
+            CODE <span className="gradient-text">THON 2k26</span>
           </span>
         </Link>
 
@@ -236,7 +236,7 @@ export function Countdown() {
   const target = new Date('2026-10-14T10:00:00+05:30').getTime();
   const end = new Date('2026-10-14T22:00:00+05:30').getTime();
 
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -275,7 +275,7 @@ export function Countdown() {
             fontSize: 'clamp(12px, 3vw, 16px)',
           }}
         >
-          ● CODETHON 2026 IS LIVE
+          ● CODE THON 2k26 IS LIVE
         </div>
       ) : (
         <>
@@ -339,7 +339,7 @@ export function Footer() {
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 900 }}>CODETHON 2026</div>
+          <div style={{ fontWeight: 900 }}>CODE THON 2k26</div>
 
           <div
             className="muted"
@@ -360,7 +360,7 @@ export function Footer() {
             lineHeight: 1.6,
           }}
         >
-          © 2026 CODETHON. Built for the MIST coding community.
+          © 2026 CODE THON 2k26. Built for the MIST coding community.
         </div>
       </div>
     </footer>

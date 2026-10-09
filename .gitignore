@@ -7,3 +7,10 @@ prisma/*.db
 
 .vercel
 .env.production.local
+
+playwright-report
+test-results
+
+e2e-cleanup.ts
+
+e2e-test-id.pdf

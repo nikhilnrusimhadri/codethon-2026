@@ -125,7 +125,7 @@ export async function POST(req: Request) {
         .slice(0, 7)
         .toUpperCase();
 
-    const p = await db.participant.create({
+    const participant = await db.participant.create({
       data: {
         registrationId,
         fullName: parsed.data.fullName,
@@ -135,10 +135,7 @@ export async function POST(req: Request) {
         branch: parsed.data.branch,
         section: parsed.data.section || null,
         year: 3,
-
-        // Store the private Blob pathname.
         collegeIdUrl: blob.pathname,
-
         collegeIdFileName: file.name,
       },
     });
@@ -147,15 +144,15 @@ export async function POST(req: Request) {
       data: {
         action: 'REGISTRATION_CREATED',
         entity: 'Participant',
-        entityId: p.id,
+        entityId: participant.id,
       },
     });
 
     return NextResponse.json({
       registrationId,
     });
-  } catch (e) {
-    console.error('Registration error:', e);
+  } catch (error) {
+    console.error('Registration error:', error);
 
     return NextResponse.json(
       {
