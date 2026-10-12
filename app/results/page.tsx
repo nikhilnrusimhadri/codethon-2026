@@ -1,43 +1,32 @@
-import Link from 'next/link';
-import { PageTitle } from '@/components/site';
 import { db } from '@/lib/db';
-import { FileText, ExternalLink } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 const levels = [
   {
     level: 1,
-    label: 'LEVEL 01',
     title: 'Conditions & Loops',
-    description:
-      'Official results for Level 1 — Conditions and Loops.',
+    description: 'Official results for Level 1 — Conditions and Loops.',
   },
   {
     level: 2,
-    label: 'LEVEL 02',
     title: 'Arrays & Strings',
-    description:
-      'Official results for Level 2 — Arrays and Strings.',
+    description: 'Results for this level have not been published yet.',
   },
   {
     level: 3,
-    label: 'LEVEL 03',
     title: 'Advanced Arrays & Strings',
-    description:
-      'Official results for Level 3 — Advanced Arrays and Strings.',
+    description: 'Results for this level have not been published yet.',
   },
   {
     level: 4,
-    label: 'LEVEL 04',
     title: 'Data Structures & Algorithms',
-    description:
-      'Official results for Level 4 — Data Structures and Algorithms.',
+    description: 'Results for this level have not been published yet.',
   },
 ];
 
-export default async function Results() {
-  const resultPdfs = await db.resultPdf.findMany({
+export default async function ResultsPage() {
+  const results = await db.resultPdf.findMany({
     where: {
       published: true,
     },
@@ -46,131 +35,145 @@ export default async function Results() {
     },
   });
 
-  const publishedLevels = new Map(
-    resultPdfs.map((result) => [result.level, result]),
-  );
-
   return (
     <main>
-      <PageTitle
-        eyebrow="Official Results"
-        title="The results are in."
-        description="Official Level-wise results released by the CODE THON 2k26 organizing team."
-      />
+      <section className="section">
+        <div className="container">
+          <div
+            style={{
+              maxWidth: 760,
+              marginBottom: 48,
+            }}
+          >
+            <div className="eyebrow">RESULTS</div>
 
-      <section className="section" style={{ paddingTop: 20 }}>
-        <div
-          className="container"
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 18,
-          }}
-        >
-          {levels.map((level) => {
-            const result = publishedLevels.get(level.level);
+            <h1
+              style={{
+                marginTop: 14,
+                marginBottom: 18,
+              }}
+            >
+              Official results.
+              <br />
+              <span className="gradient-text">Level by level.</span>
+            </h1>
 
-            return (
-              <article
-                className="card"
-                key={level.level}
-                style={{
-                  padding: 26,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  minHeight: 250,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
+            <p
+              style={{
+                fontSize: 18,
+                lineHeight: 1.7,
+                color: 'var(--muted)',
+              }}
+            >
+              Results will be published by the organizing team after each
+              competition level.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns:
+                'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 22,
+            }}
+          >
+            {levels.map((level) => {
+              const result = results.find(
+                (item) => item.level === level.level,
+              );
+
+              return (
+                <article
+                  key={level.level}
+                  className="card"
                   style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: 15,
+                    flexDirection: 'column',
+                    minHeight: 390,
                   }}
                 >
-                  <div>
-                    <div className="eyebrow">{level.label}</div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: 20,
+                    }}
+                  >
+                    <div>
+                      <div className="eyebrow">
+                        LEVEL {String(level.level).padStart(2, '0')}
+                      </div>
 
-                    <h2
+                      <h2
+                        style={{
+                          marginTop: 12,
+                          marginBottom: 0,
+                        }}
+                      >
+                        {level.title}
+                      </h2>
+                    </div>
+
+                    <div
                       style={{
-                        fontSize: 25,
-                        letterSpacing: '-.03em',
-                        margin: '8px 0 0',
+                        width: 56,
+                        height: 56,
+                        borderRadius: 16,
+                        display: 'grid',
+                        placeItems: 'center',
+                        flexShrink: 0,
+                        background:
+                          'linear-gradient(135deg, rgba(0,229,255,.10), rgba(124,92,255,.10))',
+                        border: '1px solid var(--border)',
                       }}
                     >
-                      {level.title}
-                    </h2>
+                      <span
+                        style={{
+                          fontSize: 26,
+                          color: 'var(--accent)',
+                        }}
+                      >
+                        {String(level.level).padStart(2, '0')}
+                      </span>
+                    </div>
                   </div>
+
+                  <p
+                    style={{
+                      marginTop: 26,
+                      fontSize: 17,
+                      lineHeight: 1.7,
+                      color: 'var(--muted)',
+                    }}
+                  >
+                    {result
+                      ? level.description
+                      : 'Results for this level have not been published yet.'}
+                  </p>
 
                   <div
                     style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 12,
-                      display: 'grid',
-                      placeItems: 'center',
-                      background: '#ffffff08',
-                      border: '1px solid #ffffff12',
-                      flexShrink: 0,
+                      marginTop: 'auto',
+                      paddingTop: 22,
                     }}
                   >
-                    <FileText
-                      size={21}
-                      color="var(--cyan)"
-                    />
+                    {!result && (
+                      <div
+                        className="status"
+                        style={{
+                          display: 'inline-flex',
+                        }}
+                      >
+                        Results Not Published
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                <p
-                  className="muted"
-                  style={{
-                    lineHeight: 1.7,
-                    marginTop: 18,
-                  }}
-                >
-                  {result
-                    ? level.description
-                    : 'Results for this level have not been published yet.'}
-                </p>
-
-                <div
-                  style={{
-                    marginTop: 'auto',
-                    paddingTop: 22,
-                  }}
-                >
-                  {result ? (
-                    <Link
-                      href={`/api/results/${level.level}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary"
-                      style={{
-                        width: '100%',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      View Official Results
-                      <ExternalLink size={16} />
-                    </Link>
-                  ) : (
-                    <div
-                      className="status"
-                      style={{
-                        display: 'inline-flex',
-                      }}
-                    >
-                      Results Not Published
-                    </div>
-                  )}
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
     </main>
