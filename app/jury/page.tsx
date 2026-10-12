@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { db } from '@/lib/db';
 import { PageTitle } from '@/components/site';
 
@@ -83,9 +85,7 @@ export default async function Jury() {
                         margin: '0 auto 18px',
                       }}
                     >
-                      {j.name
-                        .slice(0, 1)
-                        .toUpperCase()}
+                      {j.name.slice(0, 1).toUpperCase()}
                     </div>
                   )}
 
@@ -97,12 +97,10 @@ export default async function Jury() {
                     {j.designation}
                   </div>
 
-                  {(j.organization ||
-                    j.department) && (
+                  {(j.organization || j.department) && (
                     <p className="muted">
                       {j.organization}
-                      {j.organization &&
-                      j.department
+                      {j.organization && j.department
                         ? ' · '
                         : ''}
                       {j.department}
