@@ -10,7 +10,9 @@ export async function GET() {
       orderBy: { displayOrder: 'asc' },
     });
 
-    return NextResponse.json(items);
+    return NextResponse.json({
+      jury: items,
+    });
   } catch {
     return NextResponse.json(
       { error: 'Unauthorized' },
