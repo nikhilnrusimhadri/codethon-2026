@@ -25,6 +25,7 @@ model Participant {
   branch             Branch
   section            String?
   year               Int                @default(3)
+  tShirtSize         String?
   collegeIdUrl       String
   collegeIdFileName  String
   verificationStatus VerificationStatus @default(PENDING)

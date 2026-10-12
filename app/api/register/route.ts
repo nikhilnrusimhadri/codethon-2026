@@ -30,6 +30,7 @@ export async function POST(req: Request) {
       branch: String(fd.get('branch') || ''),
       section: String(fd.get('section') || ''),
       year: 3 as const,
+      tShirtSize: String(fd.get('tShirtSize') || ''),
       declaration: String(fd.get('declaration')) === 'true',
     };
 
@@ -135,6 +136,7 @@ export async function POST(req: Request) {
         branch: parsed.data.branch,
         section: parsed.data.section || null,
         year: 3,
+        tShirtSize: parsed.data.tShirtSize,
         collegeIdUrl: blob.pathname,
         collegeIdFileName: file.name,
       },

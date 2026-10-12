@@ -2,9 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { AdminTitle } from '@/components/admin';
-import { Search, Eye, Check, X } from 'lucide-react';
+import {
+  Search,
+  Eye,
+  Check,
+  X,
+  Download,
+} from 'lucide-react';
 
-const branches = ['', 'CSE', 'CSM', 'EEE', 'ECE', 'MECHANICAL', 'CIVIL'];
+const branches = [
+  '',
+  'CSE',
+  'CSM',
+  'EEE',
+  'ECE',
+  'MECHANICAL',
+  'CIVIL',
+];
 
 export default function Registrations() {
   const [data, setData] = useState<any>({
@@ -18,6 +32,7 @@ export default function Registrations() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<any>(null);
+  const [downloading, setDownloading] = useState(false);
 
   async function load() {
     const u = new URL(
@@ -43,6 +58,61 @@ export default function Registrations() {
 
     if (r.ok) {
       setData(await r.json());
+    }
+  }
+
+  async function downloadPdf() {
+    try {
+      setDownloading(true);
+
+      const u = new URL(
+        '/api/admin/registrations/export',
+        location.origin,
+      );
+
+      if (q) {
+        u.searchParams.set('q', q);
+      }
+
+      if (branch) {
+        u.searchParams.set('branch', branch);
+      }
+
+      if (status) {
+        u.searchParams.set('status', status);
+      }
+
+      const response = await fetch(u);
+
+      if (!response.ok) {
+        alert('Unable to generate participant PDF.');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = 'codethon-2k26-participants.pdf';
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(
+        'Participant PDF download error:',
+        error,
+      );
+
+      alert(
+        'Unable to download the participant PDF.',
+      );
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -145,6 +215,26 @@ export default function Registrations() {
           <option value="VERIFIED">Verified</option>
           <option value="REJECTED">Rejected</option>
         </select>
+
+        <button
+          className="btn"
+          onClick={downloadPdf}
+          disabled={downloading}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            whiteSpace: 'nowrap',
+            minWidth: 145,
+          }}
+        >
+          <Download size={15} />
+
+          {downloading
+            ? 'Generating...'
+            : 'Download PDF'}
+        </button>
       </div>
 
       <div className="table-wrap">
@@ -154,6 +244,7 @@ export default function Registrations() {
               <th>Name</th>
               <th>Roll No</th>
               <th>Branch</th>
+              <th>T-Shirt</th>
               <th>Email</th>
               <th>Status</th>
               <th>Team</th>
@@ -166,6 +257,7 @@ export default function Registrations() {
               <tr key={p.id}>
                 <td>
                   <b>{p.fullName}</b>
+
                   <div className="muted">
                     {p.registrationId}
                   </div>
@@ -174,6 +266,10 @@ export default function Registrations() {
                 <td>{p.rollNumber}</td>
 
                 <td>{p.branch}</td>
+
+                <td>
+                  <b>{p.tShirtSize || '—'}</b>
+                </td>
 
                 <td>{p.collegeEmail}</td>
 
@@ -196,7 +292,9 @@ export default function Registrations() {
                     style={{
                       padding: '7px 10px',
                     }}
-                    onClick={() => setSelected(p)}
+                    onClick={() =>
+                      setSelected(p)
+                    }
                   >
                     <Eye size={14} />
                     View
@@ -284,7 +382,9 @@ export default function Registrations() {
               </div>
 
               <button
-                onClick={() => setSelected(null)}
+                onClick={() =>
+                  setSelected(null)
+                }
                 className="btn btn-ghost"
                 style={{ padding: 8 }}
               >
@@ -323,6 +423,10 @@ export default function Registrations() {
                 ],
                 ['Year', '3rd Year'],
                 [
+                  'T-Shirt Size',
+                  selected.tShirtSize || '—',
+                ],
+                [
                   'Registered',
                   new Date(
                     selected.registeredAt,
@@ -341,7 +445,11 @@ export default function Registrations() {
                     {a}
                   </div>
 
-                  <div style={{ marginTop: 5 }}>
+                  <div
+                    style={{
+                      marginTop: 5,
+                    }}
+                  >
                     {b}
                   </div>
                 </div>
